@@ -120,31 +120,37 @@ class AI_5x5(BaseAI):
             return [(size // 2, size // 2)]
 
         move_scores = []
-        blocking_moves = []
-        WIN_THRESHOLD = 90000
+        WIN_THRESHOLD = 50000   # ← chỉ trigger open-4 trở lên
+        BLOCK_THRESHOLD = 30000  # ← chặn khi đối thủ có open-4
 
         for r, c in moves:
             board.grid[r][c] = self.symbol
             my_score = self.evaluate_cell(board, r, c, self.symbol)
-
             board.grid[r][c] = self.opponent
             opp_score = self.evaluate_cell(board, r, c, self.opponent)
-
             board.grid[r][c] = " "
 
             if my_score >= WIN_THRESHOLD:
-                return [(r, c)]
-            elif opp_score >= WIN_THRESHOLD:
-                blocking_moves.append((r, c))
+                return [(r, c)]  # Thắng ngay, đi liền
 
-            move_scores.append((my_score + opp_score, (r, c)))
+            combined = my_score + opp_score * 1.2  # ← trọng số phòng thủ cao hơn tí
+            move_scores.append((combined, opp_score, (r, c)))
 
-        if blocking_moves:
-            return [blocking_moves[0]]
-
+        # Sort: ưu tiên chặn nếu điểm đối thủ cao
         move_scores.sort(key=lambda x: x[0], reverse=True)
+
+        # Đảm bảo nước chặn critical không bị bỏ sót
+        critical_blocks = [(s, o, m)
+                           for s, o, m in move_scores if o >= BLOCK_THRESHOLD]
+        if critical_blocks:
+            best_block = max(critical_blocks, key=lambda x: x[1])
+            top = [m[2] for m in move_scores[:5]]
+            if best_block[2] not in top:
+                top[-1] = best_block[2]
+            return top
+
         limit = 8 if self.depth <= 3 else 5
-        return [m[1] for m in move_scores[:limit]]
+        return [m[2] for m in move_scores[:limit]]
 
     def evaluate_board(self, board, game_engine):
         """
@@ -153,7 +159,6 @@ class AI_5x5(BaseAI):
         """
         score = 0
         size = board.size
-        player = self.symbol
 
         min_r, max_r = size, 0
         min_c, max_c = size, 0
@@ -176,29 +181,34 @@ class AI_5x5(BaseAI):
         min_c = max(0, min_c - 4)
         max_c = min(size - 1, max_c + 4)
 
-        for r in range(min_r, max_r + 1):
-            for c in range(min_c, max_c - 3):
-                score += self.score_pattern(
-                    [board.grid[r][c+i] for i in range(5)],
-                    player, self.opponent, " ")
+        directions = [
+            # horizontal
+            lambda r, c, i: (r, c + i),
+            # vertical
+            lambda r, c, i: (r + i, c),
+            # diagonal
+            lambda r, c, i: (r + i, c + i),
+            # anti-diagonal
+            lambda r, c, i: (r + i, c - i),
+        ]
 
-        for c in range(min_c, max_c + 1):
-            for r in range(min_r, max_r - 3):
-                score += self.score_pattern(
-                    [board.grid[r+i][c] for i in range(5)],
-                    player, self.opponent, " ")
+        ranges = [
+            (range(min_r, max_r + 1), range(min_c, max_c - 3)),
+            (range(min_r, max_r - 3), range(min_c, max_c + 1)),
+            (range(min_r, max_r - 3), range(min_c, max_c - 3)),
+            (range(min_r, max_r - 3), range(min_c + 4, max_c + 1)),
+        ]
 
-        for r in range(min_r, max_r - 3):
-            for c in range(min_c, max_c - 3):
-                score += self.score_pattern(
-                    [board.grid[r+i][c+i] for i in range(5)],
-                    player, self.opponent, " ")
-
-        for r in range(min_r, max_r - 3):
-            for c in range(min_c + 4, max_c + 1):
-                score += self.score_pattern(
-                    [board.grid[r+i][c-i] for i in range(5)],
-                    player, self.opponent, " ")
+        for (rows, cols), get_pos in zip(ranges, directions):
+            for r in rows:
+                for c in cols:
+                    line = [board.grid[get_pos(r, c, i)[0]][get_pos(r, c, i)[
+                        1]] for i in range(5)]
+                    # ← Trừ điểm đối thủ
+                    score += self.score_pattern(line,
+                                                self.symbol, self.opponent, " ")
+                    score -= self.score_pattern(line,
+                                                self.opponent, self.symbol, " ")
 
         return score
 
