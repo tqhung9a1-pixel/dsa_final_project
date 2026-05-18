@@ -100,18 +100,6 @@ CHARO
 
 
 
-## Phím tắt trong game
-
-| Phím | Chức năng |
-|---|---|
-| **S** | Gợi ý nước đi tốt nhất |
-| **Z** | Undo nước đi |
-| **R** | Restart ván mới |
-| **ESC** | Thoát / Quay lại menu |
-| *(Chess)* **E** | Mở Board Editor |
-
----
-
 ## Thuật toán & Cấu trúc dữ liệu
 
 ### Chess Engine
