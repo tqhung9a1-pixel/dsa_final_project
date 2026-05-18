@@ -1,10 +1,6 @@
 <div align="center">
 
-<img src="docs/charo_caro_icon.gif" width="120" alt="Caro Icon"/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="docs/charo_icon.gif" width="120" alt="Chess Icon"/>
-
-# CHARO
+<img src="docs/charo_final.gif" width="480" alt="CHARO Banner"/>
 
 **Hệ thống game chiến thuật — Caro & Chess trên nền Python + Pygame**
 
@@ -52,8 +48,7 @@ dsa_final_project/
 │   └── gui.py            # Giao diện Pygame
 │
 └── docs/
-    ├── charo_caro_icon.gif
-    └── charo_icon.gif
+    └── charo_final.gif
 ```
 
 ---
@@ -159,16 +154,16 @@ python main_menu.py
 
 - **Bitboard** — mỗi loại quân lưu trong 1 số nguyên 64-bit, thao tác bit tốc độ cao
 - **Bit Packing** — mỗi nước đi nén vào 16-bit (6-bit start, 6-bit target, 4-bit flag)
-- **Zobrist Hashing** — hash trạng thái ván cờ để phát hiện lặp và lưu TT
+- **Zobrist Hashing** — hash trạng thái ván cờ để phát hiện lặp và cache Transposition Table
 - **Alpha-Beta + TT** — Transposition Table với 3 flag (EXACT / LOWER / UPPER)
-- **Quiescence Search** — tránh horizon effect bằng cách tiếp tục tìm ở nước ăn quân
-- **MVV-LVA** — sắp xếp nước ăn quân (nạn nhân giá trị cao × 10 − kẻ tấn công)
+- **Quiescence Search** — tránh horizon effect bằng cách tiếp tục tìm ở các nước ăn quân
+- **MVV-LVA** — sắp xếp nước ăn quân: nạn nhân giá trị cao × 10 − kẻ tấn công
 
 ### Caro AI (10×10)
 
 - **Alpha-Beta + Memoization** — kết hợp Zobrist hash để tránh tính lại trạng thái
-- **Move Ordering** — chấm điểm nước trước khi minimax để pruning hiệu quả hơn
-- **Bounding Box** — chỉ quét vùng có quân ± 4 ô, bỏ qua vùng trống
+- **Move Ordering** — chấm điểm nước trước minimax để pruning hiệu quả hơn
+- **Bounding Box** — chỉ quét vùng có quân ± 4 ô, bỏ qua hoàn toàn vùng trống
 - **Forced Move Detection** — ưu tiên ngay nước thắng / nước chặn thua ở tầng ngoài
 
 ---
